@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 Energy Crisis Dashboard — Strait of Hormuz & Iran War</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+    --red: #f85149; --orange: #d29922; --green: #3fb950; --purple: #bc8cff;
+    --cyan: #39d2c0; --pink: #f778ba;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+  .header { background: linear-gradient(135deg, #1a0a0a 0%, #0d1117 50%, #0a1628 100%); border-bottom: 1px solid var(--red); padding: 2rem; text-align: center; }
+  .header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .header h1 span { color: var(--red); }
+  .header .subtitle { color: var(--text-muted); font-size: 0.95rem; }
+  .header .live-tag { display: inline-block; background: var(--red); color: #fff; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 3px; margin-left: 8px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .alert-banner { background: rgba(248,81,73,0.12); border: 1px solid var(--red); border-radius: 8px; margin: 1.5rem 2rem; padding: 1rem 1.5rem; }
+  .alert-banner h3 { color: var(--red); font-size: 0.9rem; margin-bottom: 0.4rem; }
+  .alert-banner p { color: var(--text-muted); font-size: 0.85rem; }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; padding: 1rem 2rem; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center; }
+  .kpi .label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi .value { font-size: 1.6rem; font-weight: 700; margin: 0.2rem 0; }
+  .kpi .delta { font-size: 0.78rem; font-weight: 600; }
+  .kpi .delta.up { color: var(--red); }
+  .kpi .delta.down { color: var(--green); }
+  .kpi.critical { border-color: var(--red); box-shadow: 0 0 12px rgba(248,81,73,0.15); }
+  .kpi.warning { border-color: var(--orange); }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; padding: 1.5rem 2rem; }
+  .grid.full { grid-template-columns: 1fr; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; }
+  .card h3 { font-size: 0.85rem; color: var(--accent); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .chart-container { position: relative; height: 300px; }
+  .chart-container.tall { height: 380px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  th { text-align: left; color: var(--text-muted); font-weight: 600; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); font-size: 0.72rem; text-transform: uppercase; }
+  td { padding: 0.5rem 0.8rem; border-bottom: 1px solid rgba(48,54,61,0.5); }
+  tr:hover td { background: rgba(88,166,255,0.04); }
+  .tag { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 0.7rem; font-weight: 600; }
+  .tag.critical { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag.warning { background: rgba(210,153,34,0.15); color: var(--orange); }
+  .tag.ok { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag.elevated { background: rgba(188,140,255,0.15); color: var(--purple); }
+
+  .section-title { padding: 1.5rem 2rem 0.5rem; font-size: 1.1rem; font-weight: 700; border-top: 1px solid var(--border); margin-top: 1rem; }
+
+  .timeline { padding: 0 2rem 2rem; }
+  .timeline-item { display: flex; gap: 1rem; padding: 0.6rem 0; border-left: 2px solid var(--border); margin-left: 0.5rem; padding-left: 1.5rem; position: relative; }
+  .timeline-item::before { content: ''; position: absolute; left: -5px; top: 0.85rem; width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+  .timeline-item .date { color: var(--text-muted); font-size: 0.75rem; min-width: 60px; font-weight: 600; }
+  .timeline-item .event { font-size: 0.82rem; }
+
+  .footer { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.75rem; border-top: 1px solid var(--border); }
+
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>⚠</span> 2026 Energy Crisis Dashboard <span class="live-tag">DAY 20</span></h1>
+  <div class="subtitle">Iran War · Strait of Hormuz Closure · Global Energy Supply Disruption — Data as of March 19, 2026</div>
+</div>
+
+<div class="alert-banner">
+  <h3>⚠ LARGEST OIL SUPPLY DISRUPTION IN HISTORY (IEA, March 13)</h3>
+  <p>~20 mb/d normally transits Hormuz (20% of global seaborne oil). De facto closure since March 2 via drones, missiles, GPS jamming. Qatar LNG suspended (20% of global supply). Ras Laffan struck March 18-19 — 17% capacity destroyed, multi-year repair. IEA coordinated 400M barrel emergency release (largest ever). Brent peaked $126/bbl.</p>
+</div>
+
+<!-- KPI Row -->
+<div class="kpi-row">
+  <div class="kpi critical">
+    <div class="label">Brent Crude (Mar 16)</div>
+    <div class="value" style="color:var(--red)">$101.04</div>
+    <div class="delta up">+42.5% since Feb 27</div>
+  </div>
+  <div class="kpi critical">
+    <div class="label">WTI Crude (Mar 16)</div>
+    <div class="value" style="color:var(--red)">$93.39</div>
+    <div class="delta up">+39.5% since Feb 27</div>
+  </div>
+  <div class="kpi critical">
+    <div class="label">US Diesel</div>
+    <div class="value" style="color:var(--red)">$5.07/gal</div>
+    <div class="delta up">+47% since Jan</div>
+  </div>
+  <div class="kpi warning">
+    <div class="label">US Gasoline</div>
+    <div class="value" style="color:var(--orange)">$3.72/gal</div>
+    <div class="delta up">+34% since Jan</div>
+  </div>
+  <div class="kpi">
+    <div class="label">US SPR</div>
+    <div class="value">415M bbl</div>
+    <div class="delta" style="color:var(--text-muted)">58% capacity · 172M release planned</div>
+  </div>
+  <div class="kpi warning">
+    <div class="label">IEA Emergency Release</div>
+    <div class="value" style="color:var(--orange)">400M bbl</div>
+    <div class="delta" style="color:var(--text-muted)">Largest coordinated release ever</div>
+  </div>
+  <div class="kpi critical">
+    <div class="label">Heating Oil (NY)</div>
+    <div class="value" style="color:var(--red)">$3.59/gal</div>
+    <div class="delta up">+81% since Jan</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Henry Hub NatGas</div>
+    <div class="value">$3.03</div>
+    <div class="delta down">Stable</div>
+  </div>
+</div>
+
+<!-- SECTION: OIL PRICES -->
+<div class="section-title">1. Crude Oil Prices — Shock Trajectory</div>
+<div class="grid">
+  <div class="card">
+    <h3>Daily Brent & WTI (Feb–Mar 2026)</h3>
+    <div class="chart-container"><canvas id="chartOilDaily"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Monthly Crude Oil (2-Year)</h3>
+    <div class="chart-container"><canvas id="chartOilMonthly"></canvas></div>
+  </div>
+</div>
+
+<!-- SECTION: RETAIL FUEL -->
+<div class="section-title">2. Retail Fuel Prices — Consumer Impact</div>
+<div class="grid">
+  <div class="card">
+    <h3>US Gasoline & Diesel (Weekly)</h3>
+    <div class="chart-container"><canvas id="chartFuel"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Heating Oil — NY Harbor (Weekly)</h3>
+    <div class="chart-container"><canvas id="chartHeating"></canvas></div>
+  </div>
+</div>
+
+<!-- SECTION: NATURAL GAS & LNG -->
+<div class="section-title">3. Natural Gas & LNG — The Qatar Factor</div>
+<div class="grid">
+  <div class="card">
+    <h3>Henry Hub Natural Gas (Monthly, $/MMBtu)</h3>
+    <div class="chart-container"><canvas id="chartNatGas"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>LNG Prices — Asia vs Europe (Monthly, $/MMBtu)</h3>
+    <div class="chart-container"><canvas id="chartLNG"></canvas></div>
+  </div>
+</div>
+
+<!-- SECTION: INVENTORIES -->
+<div class="section-title">4. US Oil Inventories — Buffer Capacity</div>
+<div class="grid">
+  <div class="card">
+    <h3>US Commercial Crude Stocks (Weekly, M bbl)</h3>
+    <div class="chart-container"><canvas id="chartCommercial"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>US Total Petroleum Inventories (Weekly, M bbl)</h3>
+    <div class="chart-container"><canvas id="chartTotal"></canvas></div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>US Natural Gas Working Storage (Weekly, Bcf)</h3>
+    <div class="chart-container"><canvas id="chartGasStorage"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>US Refinery Utilization (%)</h3>
+    <div class="chart-container"><canvas id="chartRefinery"></canvas></div>
+  </div>
+</div>
+
+<!-- SECTION: STRATEGIC RESERVES -->
+<div class="section-title">5. Strategic Reserves & Preparedness by Country</div>
+<div class="grid">
+  <div class="card">
+    <h3>Days of Import Cover (Strategic + Commercial)</h3>
+    <div class="chart-container tall"><canvas id="chartReserves"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Country Preparedness Assessment</h3>
+    <table>
+      <thead>
+        <tr><th>Country</th><th>SPR (days)</th><th>Total (days)</th><th>Hormuz Dep.</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>🇯🇵 Japan</td><td>146</td><td>230–254</td><td>~80%</td><td><span class="tag ok">Well-buffered</span></td></tr>
+        <tr><td>🇰🇷 South Korea</td><td>~150</td><td>200–210</td><td>~68%</td><td><span class="tag ok">Well-buffered</span></td></tr>
+        <tr><td>🇺🇸 United States</td><td>~60*</td><td>~140</td><td>Low</td><td><span class="tag ok">Self-sufficient</span></td></tr>
+        <tr><td>🇨🇳 China</td><td>60–90</td><td>~90+</td><td>~40%</td><td><span class="tag warning">Opaque reserves</span></td></tr>
+        <tr><td>🇪🇺 Europe (gas)</td><td>—</td><td>~26-30% fill</td><td>12-14% LNG</td><td><span class="tag critical">Gas vulnerable</span></td></tr>
+        <tr><td>🇮🇳 India</td><td>~7</td><td>~72</td><td>~50%</td><td><span class="tag critical">Critical</span></td></tr>
+        <tr><td>🇵🇰 Pakistan</td><td>Minimal</td><td>~20</td><td>99% LNG</td><td><span class="tag critical">Extreme risk</span></td></tr>
+        <tr><td>🇧🇩 Bangladesh</td><td>None</td><td>~15</td><td>72% LNG</td><td><span class="tag critical">Extreme risk</span></td></tr>
+      </tbody>
+    </table>
+    <p style="color:var(--text-muted);font-size:0.72rem;margin-top:0.8rem;">* US SPR covers ~60 days of net imports but US is a net exporter of petroleum. 415M bbl in SPR, 172M planned release. IEA 90-day minimum benchmark shown as reference line.</p>
+  </div>
+</div>
+
+<!-- SECTION: EU GAS STORAGE -->
+<div class="section-title">6. EU Gas Storage — Entering Crisis Depleted</div>
+<div class="grid">
+  <div class="card">
+    <h3>EU Gas Storage Fill Rate (%, selected countries)</h3>
+    <div class="chart-container"><canvas id="chartEUGas"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Supply Disruption Scale</h3>
+    <table>
+      <thead><tr><th>Source</th><th>Pre-Crisis Flow</th><th>Current Status</th><th>Impact</th></tr></thead>
+      <tbody>
+        <tr><td>Strait of Hormuz (oil)</td><td>~20 mb/d</td><td>~70% blocked</td><td><span class="tag critical">-14 mb/d</span></td></tr>
+        <tr><td>Qatar LNG</td><td>~80 MTPA</td><td>Force majeure + damage</td><td><span class="tag critical">-20% global LNG</span></td></tr>
+        <tr><td>UAE production</td><td>~3.2 mb/d</td><td>Partially disrupted</td><td><span class="tag warning">-1-2 mb/d est.</span></td></tr>
+        <tr><td>Kuwait production</td><td>~2.7 mb/d</td><td>Force majeure</td><td><span class="tag critical">Suspended</span></td></tr>
+        <tr><td>Iran production</td><td>~3.2 mb/d</td><td>War zone</td><td><span class="tag critical">Near zero exports</span></td></tr>
+        <tr><td>Saudi Arabia</td><td>~9 mb/d</td><td>Refineries struck</td><td><span class="tag warning">Partially impaired</span></td></tr>
+      </tbody>
+    </table>
+    <p style="color:var(--text-muted);font-size:0.72rem;margin-top:0.8rem;">Total Gulf disruption estimated at 8-10 mb/d (IEA March 2026). OPEC+ offered +206 kb/d — a token 2% offset.</p>
+  </div>
+</div>
+
+<!-- SECTION: COAL & ELECTRICITY -->
+<div class="section-title">7. Secondary Energy Markets</div>
+<div class="grid">
+  <div class="card">
+    <h3>Global Coal Price — Australia ($/MT, monthly)</h3>
+    <div class="chart-container"><canvas id="chartCoal"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>US Electricity Price ($/kWh, monthly)</h3>
+    <div class="chart-container"><canvas id="chartElec"></canvas></div>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<div class="section-title">8. Conflict Timeline — Key Energy Events</div>
+<div class="timeline">
+  <div class="timeline-item"><span class="date">Feb 28</span><span class="event">US-Israel launch Operation Epic Fury — coordinated strikes on Iran</span></div>
+  <div class="timeline-item"><span class="date">Mar 2</span><span class="event">IRGC announces Strait of Hormuz closure; Qatar suspends LNG production at Ras Laffan</span></div>
+  <div class="timeline-item"><span class="date">Mar 3</span><span class="event">Ship-tracking confirms 70% traffic reduction through Strait</span></div>
+  <div class="timeline-item"><span class="date">Mar 4</span><span class="event">QatarEnergy declares force majeure on all LNG contracts</span></div>
+  <div class="timeline-item"><span class="date">Mar 8</span><span class="event">Brent crude hits $126/bbl — first time above $100 in 4 years; Israel strikes Iranian fuel depots</span></div>
+  <div class="timeline-item"><span class="date">Mar 11</span><span class="event">IEA announces 400M barrel coordinated emergency release — largest in history</span></div>
+  <div class="timeline-item"><span class="date">Mar 13</span><span class="event">IEA declares largest oil supply disruption in history; Brent $103, WTI $98</span></div>
+  <div class="timeline-item"><span class="date">Mar 15</span><span class="event">Trump calls for naval coalition to reopen Hormuz; SPR release begins</span></div>
+  <div class="timeline-item"><span class="date">Mar 16</span><span class="event">Iran reveals selective passage policy — India, Pakistan ships allowed; Japan begins 80M bbl release</span></div>
+  <div class="timeline-item"><span class="date">Mar 17</span><span class="event">Iran strikes UAE gas field and tanker near Fujairah</span></div>
+  <div class="timeline-item"><span class="date">Mar 18</span><span class="event">Israel strikes South Pars gas field (world's largest); Iran threatens Gulf-wide retaliation</span></div>
+  <div class="timeline-item"><span class="date">Mar 19</span><span class="event">Iran hits Ras Laffan (17% capacity destroyed), Saudi refineries, Kuwait gas, Haifa refinery; EU gas +35%; F-35 damaged</span></div>
+</div>
+
+<div class="footer">
+  Data: FRED, EIA, Alpha Vantage, IEA, open sources · Generated March 19, 2026 · Dashboard by Claude Code for Matias Urzúa
+</div>
+
+<script>
+// Chart defaults
+Chart.defaults.color = '#8b949e';
+Chart.defaults.borderColor = '#30363d';
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+Chart.defaults.font.size = 11;
+const annotationLine = (val, label, color) => ({
+  type: 'line', yMin: val, yMax: val, borderColor: color, borderDash: [5,3], borderWidth: 1,
+  label: { display: true, content: label, position: 'start', color, font: { size: 10 } }
+});
+
+// 1. Daily Oil Prices
+new Chart(document.getElementById('chartOilDaily'), {
+  type: 'line',
+  data: {
+    labels: ['02-12','02-13','02-17','02-18','02-19','02-20','02-23','02-24','02-25','02-26','02-27','03-02','03-03','03-04','03-05','03-06','03-09','03-10','03-11','03-12','03-13','03-16'],
+    datasets: [{
+      label: 'Brent ($/bbl)',
+      data: [69.33,69.96,69.77,71.78,73.17,72.75,71.90,71.21,70.69,71.66,71.32,77.24,83.28,81.56,88.59,95.74,94.35,89.84,90.98,102.38,103.23,101.04],
+      borderColor: '#f85149', backgroundColor: 'rgba(248,81,73,0.1)', fill: true, tension: 0.3, pointRadius: 3
+    },{
+      label: 'WTI ($/bbl)',
+      data: [62.71,63.05,62.53,65.33,66.66,66.69,66.36,65.62,65.30,65.10,66.96,71.13,74.48,74.58,80.88,90.77,94.65,83.71,86.80,95.61,98.48,93.39],
+      borderColor: '#58a6ff', backgroundColor: 'rgba(88,166,255,0.1)', fill: true, tension: 0.3, pointRadius: 3
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' },
+      annotation: undefined
+    },
+    scales: { y: { grid: { color: 'rgba(48,54,61,0.5)' } } }
+  }
+});
+
+// 2. Monthly Oil Prices (2-year)
+new Chart(document.getElementById('chartOilMonthly'), {
+  type: 'line',
+  data: {
+    labels: ['2024-03','2024-04','2024-05','2024-06','2024-07','2024-08','2024-09','2024-10','2024-11','2024-12','2025-01','2025-02','2025-03','2025-04','2025-05','2025-06','2025-07','2025-08','2025-09','2025-10','2025-11','2025-12','2026-01','2026-02'],
+    datasets: [{
+      label: 'Brent Monthly ($/bbl)',
+      data: [85.42,88.50,81.75,82.25,85.15,80.36,74.02,75.63,74.35,73.86,79.27,75.44,72.73,68.13,64.45,71.44,71.04,67.87,67.99,64.54,63.80,62.54,66.60,70.89],
+      borderColor: '#f85149', tension: 0.3, pointRadius: 2
+    },{
+      label: 'WTI Monthly ($/bbl)',
+      data: [81.26,83.39,80.02,79.77,81.80,76.68,70.24,71.99,69.95,70.12,75.74,71.53,68.24,63.54,62.17,68.17,68.39,64.86,63.96,60.89,60.06,57.97,60.04,64.51],
+      borderColor: '#58a6ff', tension: 0.3, pointRadius: 2
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(48,54,61,0.5)' } } } }
+});
+
+// 3. Fuel Prices
+new Chart(document.getElementById('chartFuel'), {
+  type: 'line',
+  data: {
+    labels: ['2025-12-29','2026-01-12','2026-01-26','2026-02-09','2026-02-23','2026-03-02','2026-03-09','2026-03-16'],
+    datasets: [{
+      label: 'Gasoline ($/gal)',
+      data: [2.811, 2.779, 2.85, 2.88, 2.937, 3.015, 3.502, 3.720],
+      borderColor: '#d29922', backgroundColor: 'rgba(210,153,34,0.1)', fill: true, tension: 0.3
+    },{
+      label: 'Diesel ($/gal)',
+      data: [3.500, 3.459, 3.55, 3.70, 3.809, 3.897, 4.859, 5.071],
+      borderColor: '#f85149', backgroundColor: 'rgba(248,81,73,0.1)', fill: true, tension: 0.3
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(48,54,61,0.5)' } } } }
+});
+
+// 4. Heating Oil
+new Chart(document.getElementById('chartHeating'), {
+  type: 'line',
+  data: {
+    labels: ['2026-01-09','2026-01-23','2026-02-06','2026-02-20','2026-02-27','2026-03-06','2026-03-13'],
+    datasets: [{
+      label: 'Heating Oil NY ($/gal)',
+      data: [1.986, 2.05, 2.193, 2.35, 2.579, 3.213, 3.588],
+      borderColor: '#f778ba', backgroundColor: 'rgba(247,120,186,0.15)', fill: true, tension: 0.3, pointRadius: 4
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(48,54,61,0.5)' } } } }
+});
+
+// 5. Natural Gas Monthly
+new Chart(document.getElementById('chartNatGas'), {
+  type: 'line',
+  data: {
+    labels: ['2024-03','2024-04','2024-05','2024-06','2024-07','2024-08','2024-09','2024-10','2024-11','2024-12','2025-01','2025-02','2025-03','2025-04','2025-05','2025-06','2025-07','2025-08','2025-09','2025-10','2025-11','2025-12','2026-01','2026-02'],
+    datasets: [{
+      label: 'Henry Hub ($/MMBtu)',
+      data: [1.49,1.60,2.12,2.54,2.07,1.99,2.28,2.20,2.12,3.01,4.13,4.19,4.12,3.42,3.12,3.02,3.20,2.91,2.97,3.19,3.79,4.26,7.72,3.62],
+      borderColor: '#39d2c0', backgroundColor: 'rgba(57,210,192,0.1)', fill: true, tension: 0.3, pointRadius: 2
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(48,54,61,0.5)' } } } }
+});
+
+// 6. LNG Prices
+new Chart(document.getElementById('chartLNG'), {
+  type: 'line',
+  data: {
+    labels: ['2024-06','2024-07','2024-08','2024-09','2024-10','2024-11','2024-12','2025-01','2025-02','2025-03','2025-04','2025-05','2025-06','2025-07','2025-08','2025-09','2025-10','2025-11','2025-12','2026-01'],
+    datasets: [{
+      label: 'LNG Asia ($/MMBtu)',
+      data: [12.2,12.5,13.1,13.8,13.2,14.0,14.5,15.0,14.72,13.8,13.0,12.5,12.26,12.0,11.5,10.8,10.5,10.2,9.91,10.44],
+      borderColor: '#bc8cff', tension: 0.3, pointRadius: 2
+    },{
+      label: 'LNG Europe ($/MMBtu)',
+      data: [11.5,12.0,12.8,13.5,13.0,14.2,14.8,15.2,15.38,14.5,13.2,12.0,11.5,11.0,10.8,10.2,9.8,9.6,9.46,11.99],
+      borderColor: '#58a6ff', tension: 0.3, pointRadius: 2
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(48,54,61,0.5)' } } } }
+});
+
+// 7. Commercial Crude Stocks
+new Chart(document.getElementById('chartCommercial'), {
+  type: 'line',
+  data: {
+    labels: ['2025-08-22','2025-09-05','2025-09-19','2025-10-03','2025-10-17','2025-10-31','2025-11-14','2025-11-28','2025-12-12','2025-12-26','2026-01-09','2026-01-23','2026-02-06','2026-02-20','2026-03-06','2026-03-13'],
+    datasets: [{
+      label: 'Commercial Crude (M bbl)',
+      data: [418.3,424.6,414.8,420.3,422.8,421.2,424.2,427.5,424.4,422.9,422.4,423.8,428.8,435.8,443.1,449.3],
+      borderColor: '#58a6ff', backgroundColor: 'rgba(88,166,255,0.1)', fill: true, tension: 0.3, pointRadius: 3
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    scales: { y: { min: 400, grid: { color: 'rgba(48,54,61,0.5)' } } }
+  }
+});
+
+// 8. Total Petroleum Inventories
+new Chart(document.getElementById('chartTotal'), {
+  type: 'line',
+  data: {
+    labels: ['2025-08-22','2025-09-05','2025-09-19','2025-10-03','2025-10-17','2025-10-31','2025-11-14','2025-11-28','2025-12-12','2025-12-26','2026-01-09','2026-01-23','2026-02-06','2026-02-20','2026-03-06','2026-03-13'],
+    datasets: [{
+      label: 'Total Petroleum (M bbl)',
+      data: [1258.7,1281.3,1281.9,1287.2,1284.6,1269.4,1269.2,1276.0,1275.0,1285.8,1300.1,1300.9,1273.9,1266.0,1266.9,1267.4],
+      borderColor: '#3fb950', backgroundColor: 'rgba(63,185,80,0.08)', fill: true, tension: 0.3, pointRadius: 3
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    scales: { y: { min: 1240, grid: { color: 'rgba(48,54,61,0.5)' } } }
+  }
+});
+
+// 9. Natural Gas Storage
+new Chart(document.getElementById('chartGasStorage'), {
+  type: 'bar',
+  data: {
+    labels: ['2025-09','2025-10','2025-11','2025-12','2026-01','2026-02','2026-03-06','2026-03-13'],
+    datasets: [{
+      label: 'Lower 48 Working Gas (Bcf)',
+      data: [3550, 3800, 3600, 3200, 2700, 2018, 1848, 1883],
+      backgroundColor: 'rgba(57,210,192,0.4)', borderColor: '#39d2c0', borderWidth: 1
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(48,54,61,0.5)' } } } }
+});
+
+// 10. Refinery Utilization
+new Chart(document.getElementById('chartRefinery'), {
+  type: 'line',
+  data: {
+    labels: ['2025-09','2025-10','2025-11','2025-12','2026-01','2026-02','2026-02-27','2026-03-06','2026-03-13'],
+    datasets: [{
+      label: 'Refinery Utilization (%)',
+      data: [92.5, 90.2, 91.0, 89.5, 87.0, 88.5, 89.2, 90.8, 91.4],
+      borderColor: '#d29922', backgroundColor: 'rgba(210,153,34,0.1)', fill: true, tension: 0.3, pointRadius: 3
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    scales: { y: { min: 80, max: 100, grid: { color: 'rgba(48,54,61,0.5)' } } }
+  }
+});
+
+// 11. Strategic Reserves Bar Chart
+new Chart(document.getElementById('chartReserves'), {
+  type: 'bar',
+  data: {
+    labels: ['Japan', 'S. Korea', 'US', 'China', 'India', 'Pakistan', 'Bangladesh'],
+    datasets: [{
+      label: 'Strategic Reserve (days)',
+      data: [146, 150, 60, 75, 7, 3, 0],
+      backgroundColor: 'rgba(88,166,255,0.6)', borderColor: '#58a6ff', borderWidth: 1
+    },{
+      label: 'Commercial Reserve (days)',
+      data: [108, 60, 80, 20, 65, 17, 15],
+      backgroundColor: 'rgba(63,185,80,0.5)', borderColor: '#3fb950', borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y',
+    scales: {
+      x: { stacked: true, grid: { color: 'rgba(48,54,61,0.5)' }, title: { display: true, text: 'Days of Import Cover', color: '#8b949e' } },
+      y: { stacked: true }
+    },
+    plugins: { legend: { position: 'top' } }
+  }
+});
+
+// 12. EU Gas Storage
+new Chart(document.getElementById('chartEUGas'), {
+  type: 'bar',
+  data: {
+    labels: ['Germany', 'France', 'Netherlands', 'Italy', 'Spain', 'EU Avg'],
+    datasets: [{
+      label: 'Current Fill (%)',
+      data: [30.2, 29, 23.5, 35, 45, 28],
+      backgroundColor: 'rgba(248,81,73,0.5)', borderColor: '#f85149', borderWidth: 1
+    },{
+      label: 'Target (90% by Nov)',
+      data: [59.8, 61, 66.5, 55, 45, 62],
+      backgroundColor: 'rgba(48,54,61,0.4)', borderColor: '#30363d', borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { stacked: true },
+      y: { stacked: true, max: 100, grid: { color: 'rgba(48,54,61,0.5)' }, title: { display: true, text: 'Fill Rate (%)', color: '#8b949e' } }
+    }
+  }
+});
+
+// 13. Coal
+new Chart(document.getElementById('chartCoal'), {
+  type: 'line',
+  data: {
+    labels: ['2024-04','2024-06','2024-08','2024-10','2024-12','2025-02','2025-04','2025-06','2025-08','2025-10','2025-12','2026-01'],
+    datasets: [{
+      label: 'Coal Australia ($/MT)',
+      data: [135,128,138,145,150,140,101,110,108,112,115.7,115.8],
+      borderColor: '#d29922', backgroundColor: 'rgba(210,153,34,0.1)', fill: true, tension: 0.3, pointRadius: 3
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(48,54,61,0.5)' } } } }
+});
+
+// 14. Electricity
+new Chart(document.getElementById('chartElec'), {
+  type: 'line',
+  data: {
+    labels: ['2024-06','2024-08','2024-10','2024-12','2025-02','2025-04','2025-06','2025-08','2025-10','2025-12','2026-01','2026-02'],
+    datasets: [{
+      label: 'US Avg Electricity ($/kWh)',
+      data: [0.183,0.184,0.181,0.176,0.179,0.183,0.190,0.189,0.185,0.189,0.192,0.189],
+      borderColor: '#bc8cff', backgroundColor: 'rgba(188,140,255,0.1)', fill: true, tension: 0.3, pointRadius: 3
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(48,54,61,0.5)' } } } }
+});
+</script>
+</body>
+</html>
