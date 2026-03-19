@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Special Report: Global Energy Supply Disruption Assessment — March 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --navy: #1a2332; --navy-light: #243447; --blue: #2563eb; --blue-light: #3b82f6;
+    --gold: #b8860b; --gold-light: #daa520; --red: #dc2626; --red-light: #ef4444;
+    --green: #059669; --orange: #d97706; --purple: #7c3aed;
+    --bg: #fafbfc; --surface: #ffffff; --border: #e2e8f0; --border-dark: #cbd5e1;
+    --text: #1e293b; --text-secondary: #475569; --text-muted: #94a3b8;
+  }
+
+  @media print {
+    body { font-size: 10pt; }
+    .page-break { page-break-before: always; }
+    .no-print { display: none; }
+    .chart-container { height: 250px !important; }
+    .chart-container.tall { height: 300px !important; }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Source Sans 3', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; }
+
+  /* Cover Page */
+  .cover { background: linear-gradient(160deg, var(--navy) 0%, #0f172a 60%, #1e3a5f 100%); color: #fff; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 4rem 2rem; position: relative; overflow: hidden; }
+  .cover::before { content: ''; position: absolute; top: -50%; right: -20%; width: 800px; height: 800px; background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%); }
+  .cover::after { content: ''; position: absolute; bottom: -30%; left: -10%; width: 600px; height: 600px; background: radial-gradient(circle, rgba(184,134,11,0.06) 0%, transparent 70%); }
+  .cover .institution { font-size: 0.85rem; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-light); font-weight: 600; margin-bottom: 2rem; position: relative; z-index: 1; }
+  .cover .classification { display: inline-block; border: 2px solid var(--red-light); color: var(--red-light); padding: 4px 18px; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin-bottom: 2rem; border-radius: 2px; position: relative; z-index: 1; }
+  .cover h1 { font-family: 'Merriweather', Georgia, serif; font-size: 2.6rem; font-weight: 900; line-height: 1.25; max-width: 800px; margin-bottom: 1.5rem; position: relative; z-index: 1; }
+  .cover .subtitle { font-size: 1.15rem; font-weight: 300; color: #94a3b8; max-width: 650px; line-height: 1.6; margin-bottom: 3rem; position: relative; z-index: 1; }
+  .cover .meta { font-size: 0.85rem; color: #64748b; position: relative; z-index: 1; }
+  .cover .meta strong { color: #94a3b8; }
+  .cover .divider { width: 80px; height: 3px; background: var(--gold); margin: 1.5rem auto; position: relative; z-index: 1; }
+
+  /* Layout */
+  .container { max-width: 960px; margin: 0 auto; padding: 0 2rem; }
+  .report-body { padding: 3rem 0; }
+
+  /* Typography */
+  h2 { font-family: 'Merriweather', Georgia, serif; font-size: 1.55rem; font-weight: 700; color: var(--navy); margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--gold); }
+  h3 { font-size: 1.15rem; font-weight: 700; color: var(--navy-light); margin: 1.8rem 0 0.6rem; }
+  h4 { font-size: 1rem; font-weight: 600; color: var(--text-secondary); margin: 1.2rem 0 0.5rem; }
+  p { margin-bottom: 1rem; text-align: justify; hyphens: auto; }
+  .lead { font-size: 1.08rem; font-weight: 400; color: var(--text-secondary); line-height: 1.8; }
+
+  /* Executive Summary Box */
+  .exec-summary { background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%); border-left: 5px solid var(--gold); padding: 1.5rem 2rem; margin: 2rem 0; border-radius: 0 8px 8px 0; }
+  .exec-summary h3 { color: var(--gold); margin-top: 0; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* Key Finding Box */
+  .finding { background: #eff6ff; border-left: 4px solid var(--blue); padding: 1.2rem 1.5rem; margin: 1.5rem 0; border-radius: 0 6px 6px 0; }
+  .finding.critical { background: #fef2f2; border-color: var(--red); }
+  .finding.warning { background: #fffbeb; border-color: var(--orange); }
+  .finding.positive { background: #ecfdf5; border-color: var(--green); }
+  .finding strong { display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.3rem; }
+  .finding.critical strong { color: var(--red); }
+  .finding.warning strong { color: var(--orange); }
+  .finding.positive strong { color: var(--green); }
+  .finding strong::before { content: '■ '; }
+
+  /* Charts */
+  .figure { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .figure-caption { font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.8rem; line-height: 1.5; }
+  .figure-caption strong { color: var(--text); }
+  .figure-number { font-weight: 700; color: var(--navy); }
+  .chart-container { position: relative; height: 320px; }
+  .chart-container.tall { height: 380px; }
+  .chart-container.short { height: 260px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.88rem; }
+  thead { background: var(--navy); color: #fff; }
+  th { padding: 0.7rem 1rem; text-align: left; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.3px; }
+  td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); }
+  tbody tr:nth-child(even) { background: #f8fafc; }
+  tbody tr:hover { background: #f1f5f9; }
+  .table-caption { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+  .table-caption strong { color: var(--text); }
+
+  /* Tags */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.3px; }
+  .tag.critical { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
+  .tag.warning { background: #fffbeb; color: var(--orange); border: 1px solid #fde68a; }
+  .tag.ok { background: #ecfdf5; color: var(--green); border: 1px solid #a7f3d0; }
+  .tag.elevated { background: #f5f3ff; color: var(--purple); border: 1px solid #ddd6fe; }
+  .tag.neutral { background: #f1f5f9; color: var(--text-secondary); border: 1px solid var(--border); }
+
+  /* Two Column */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* Footnotes */
+  .footnotes { font-size: 0.78rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 2rem; }
+  .footnotes p { margin-bottom: 0.3rem; text-align: left; }
+  sup { font-size: 0.7rem; color: var(--blue); }
+
+  /* Disclaimer */
+  .disclaimer { background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 1.2rem; margin: 2rem 0; font-size: 0.8rem; color: var(--text-muted); }
+
+  /* Table of Contents */
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem 2rem; margin: 2rem 0; }
+  .toc h3 { margin-top: 0; font-size: 0.9rem; color: var(--navy); letter-spacing: 1px; text-transform: uppercase; }
+  .toc ol { padding-left: 1.5rem; }
+  .toc li { padding: 0.25rem 0; font-size: 0.92rem; color: var(--text-secondary); }
+  .toc li::marker { color: var(--gold); font-weight: 700; }
+
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+  .right { text-align: right; }
+  .center { text-align: center; }
+  .bold { font-weight: 700; }
+  .red { color: var(--red); }
+  .green { color: var(--green); }
+  .muted { color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover">
+  <div class="institution">Office of the Chief Economist</div>
+  <div class="classification">Restricted — Internal Distribution</div>
+  <div class="divider"></div>
+  <h1>Global Energy Supply Disruption Assessment</h1>
+  <div class="subtitle">Implications of the Strait of Hormuz Closure and Escalating Middle East Conflict for Energy Security, Inflation, and Monetary Policy</div>
+  <div class="divider"></div>
+  <div class="meta">
+    <strong>Special Report SR-2026/03</strong><br>
+    March 19, 2026 — Day 20 of Operation Epic Fury<br><br>
+    Prepared by the Financial Stability & Macroeconomic Analysis Division<br>
+    <em>Classification: Restricted — Not for public release</em>
+  </div>
+</div>
+
+<!-- REPORT BODY -->
+<div class="container report-body">
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h3>Contents</h3>
+  <ol>
+    <li>Executive Summary and Policy Implications</li>
+    <li>Conflict Overview and Energy Infrastructure Damage</li>
+    <li>Crude Oil Markets: Price Dynamics and Supply Shortfall</li>
+    <li>Refined Products: Downstream Pass-Through and Consumer Impact</li>
+    <li>Natural Gas and LNG: The Qatar Structural Shock</li>
+    <li>Strategic Reserves and Emergency Coordination</li>
+    <li>Country-Level Vulnerability Assessment</li>
+    <li>European Energy Security: Gas Storage and Winter Risk</li>
+    <li>Secondary Energy Markets: Coal and Electricity</li>
+    <li>Macroeconomic and Monetary Policy Implications</li>
+    <li>Scenario Analysis and Risk Assessment</li>
+    <li>Recommendations</li>
+  </ol>
+</div>
+
+<!-- 1. EXECUTIVE SUMMARY -->
+<h2>1. Executive Summary and Policy Implications</h2>
+
+<div class="exec-summary">
+  <h3>Key Judgements</h3>
+  <p>The de facto closure of the Strait of Hormuz on March 2, 2026, following the launch of Operation Epic Fury, constitutes the most severe disruption to global energy supply since the formation of OPEC. Approximately 20 million barrels per day of crude oil transit — representing 20 per cent of global seaborne oil trade — has been reduced by an estimated 70 per cent. Simultaneously, Qatar's LNG production, accounting for roughly 20 per cent of global supply, has been suspended and partially destroyed. The International Energy Agency declared this the largest oil supply disruption in recorded history on March 13. The confluence of an oil transit disruption with physical destruction of LNG export infrastructure is unprecedented in scale and represents a structural, not merely transitory, supply shock.</p>
+</div>
+
+<p>The current crisis differs qualitatively from previous energy disruptions — including the 1973 Arab oil embargo, the 1979 Iranian Revolution, the 1990 Gulf War, and the 2022 Russia-Ukraine energy shock — in three material respects. First, the disruption affects both crude oil transit and liquefied natural gas simultaneously, through the same chokepoint and the same conflict. Second, the physical destruction of Ras Laffan, Qatar's primary LNG export facility, introduces a multi-year structural deficit that will persist well beyond any ceasefire. The QatarEnergy CEO has stated that 17 per cent of export capacity was destroyed in the March 18–19 strikes, with full reconstruction requiring up to five years. Third, the conflict is actively escalating, with energy infrastructure on both belligerent and neutral Gulf states now being deliberately targeted, removing the historical convention of energy assets as de facto protected infrastructure.</p>
+
+<p>The macroeconomic implications are severe. Brent crude has risen from approximately $71 per barrel in late February to a peak of $126 on March 8, settling around $101–103 in recent trading. Diesel and heating oil have experienced even sharper increases — 47 per cent and 81 per cent respectively — indicating acute refining and distillate supply stress beyond the crude price shock alone. The coordinated release of 400 million barrels from IEA member strategic reserves provides approximately 40–50 days of coverage at current disruption rates, but this is a finite buffer that cannot substitute for restored transit. Central banks face a familiar but acute dilemma: an exogenous supply shock that raises both inflation expectations and recession risk simultaneously.</p>
+
+<div class="finding critical">
+  <strong>Critical Assessment</strong>
+  <p>At current conflict trajectories, the global economy faces a sustained energy supply shortfall of 8–10 million barrels per day of crude oil and the loss of approximately 80 million tonnes per annum of LNG capacity. Existing strategic reserves and emergency releases provide a temporary buffer of 40–50 days. Should the Strait remain effectively closed beyond June 2026, rationing of petroleum products in import-dependent economies (India, Pakistan, Bangladesh) becomes probable, and a global recession triggered by energy cost pass-through becomes the central scenario.</p>
+</div>
+
+<!-- 2. CONFLICT OVERVIEW -->
+<h2 class="page-break">2. Conflict Overview and Energy Infrastructure Damage</h2>
+
+<p>Operation Epic Fury commenced on February 28, 2026, with coordinated US-Israeli airstrikes on Iranian military facilities, nuclear sites, and leadership targets, including a decapitation strike that killed Supreme Leader Ali Khamenei. The conflict entered its twentieth day on March 19. The initial phase (February 28–March 7) focused on military and nuclear targets. The second phase (March 8 onwards) has been marked by an escalating cycle of strikes on energy infrastructure, a development that has dramatically amplified the economic consequences of the conflict.</p>
+
+<p>The Islamic Revolutionary Guard Corps announced the closure of the Strait of Hormuz on March 2 via VHF radio broadcast. Notably, Iran did not declare a formal legal blockade under international law. Instead, the de facto closure was achieved through a combination of anti-ship cruise missiles, armed drones, GPS jamming, and the withdrawal of commercial maritime insurance coverage — which rendered transit commercially unviable regardless of physical risk tolerance. Ship-tracking data confirmed a 70 per cent reduction in traffic within 48 hours. Iran subsequently adopted a selective passage policy, permitting transit by Indian, Pakistani, and certain neutral-flagged vessels that dock at Iranian ports, while maintaining interdiction of US-allied commercial shipping.</p>
+
+<h3>Timeline of Energy Infrastructure Strikes</h3>
+
+<table>
+  <thead><tr><th>Date</th><th>Perpetrator</th><th>Target</th><th>Damage Assessment</th></tr></thead>
+  <tbody>
+    <tr><td>Mar 2</td><td>Iran (IRGC)</td><td>Strait of Hormuz — general closure</td><td>~70% traffic reduction, de facto blockade</td></tr>
+    <tr><td>Mar 2</td><td>Iran</td><td>Ras Laffan, Qatar (drones)</td><td>Production suspended; force majeure declared Mar 4</td></tr>
+    <tr><td>Mar 8</td><td>Israel</td><td>Iranian fuel depots (multiple)</td><td>Significant refining capacity destroyed</td></tr>
+    <tr><td>Mar 17</td><td>Iran</td><td>UAE gas field; tanker near Fujairah</td><td>Gas production curtailed; tanker damaged</td></tr>
+    <tr><td>Mar 18</td><td>Israel</td><td>South Pars gas field, Iran</td><td>First strike on upstream energy — world's largest gas reserve</td></tr>
+    <tr><td>Mar 19</td><td>Iran</td><td>Ras Laffan (Qatar), 2 Saudi refineries, Kuwait gas units, Haifa refinery (Israel)</td><td>17% Qatar LNG capacity destroyed; multi-year repair; Gulf-wide damage</td></tr>
+  </tbody>
+</table>
+<div class="figure-caption"><strong class="figure-number">Table 1.</strong> Major strikes on energy infrastructure, February 28–March 19, 2026. The March 18–19 escalation marks the first deliberate targeting of upstream energy assets and neutral-state infrastructure on both sides.</div>
+
+<div class="finding warning">
+  <strong>Escalation Risk</strong>
+  <p>The deliberate targeting of energy infrastructure in neutral Gulf states (Qatar, UAE, Saudi Arabia, Kuwait) represents a significant escalation. Saudi Arabia has publicly stated that "trust is gone." Should Gulf states perceive that they cannot remain non-belligerent while absorbing strikes, the conflict could widen to include retaliatory actions or alignment shifts, further disrupting remaining non-Hormuz energy supply chains.</p>
+</div>
+
+
+<!-- 3. CRUDE OIL MARKETS -->
+<h2 class="page-break">3. Crude Oil Markets: Price Dynamics and Supply Shortfall</h2>
+
+<p>Crude oil markets have experienced the most rapid sustained price increase since the outbreak of the Russia-Ukraine conflict in February 2022, though the current shock is larger in magnitude and structural duration. Brent crude rose from $71.32 on February 27 to a peak of $126 on March 8 — a 77 per cent increase in nine trading sessions. Following the IEA's announcement of a 400 million barrel coordinated release on March 11, prices retreated to the $101–103 range, where they have traded with elevated intraday volatility (3–5 per cent daily ranges). WTI followed a similar trajectory, rising from $66.96 to $98.48, though the Brent–WTI spread has widened to approximately $7.65, up from a pre-crisis spread of roughly $5 — reflecting tighter international supply conditions relative to the US domestic market, which benefits from shale production and pipeline-connected Canadian imports.</p>
+
+<div class="figure">
+  <div class="chart-container"><canvas id="fig1"></canvas></div>
+  <div class="figure-caption"><strong class="figure-number">Figure 1.</strong> Daily Brent and WTI crude oil prices, February 12–March 16, 2026. The vertical dashed region marks the onset of hostilities (February 28). Brent breached $100 on March 6 and peaked at $126 on March 8. The March 11 IEA coordinated release announcement temporarily arrested the rally. Source: FRED (DCOILBRENTEU, DCOILWTICO).</div>
+</div>
+
+<div class="figure">
+  <div class="chart-container"><canvas id="fig2"></canvas></div>
+  <div class="figure-caption"><strong class="figure-number">Figure 2.</strong> Monthly average Brent and WTI crude oil prices, March 2024–February 2026. The pre-crisis downtrend — from $88.50 (Brent, April 2024) to $62.54 (December 2025) — reflected OPEC+ overproduction, Chinese demand weakness, and US shale resilience. This trend has been violently reversed. Source: Alpha Vantage.</div>
+</div>
+
+<p>The scale of the supply disruption is historically unprecedented. Approximately 20 million barrels per day of crude oil and condensate normally transits the Strait of Hormuz, representing roughly 20 per cent of global seaborne oil trade. With traffic reduced by an estimated 70 per cent, the net shortfall is approximately 14 mb/d of transit capacity, though not all of this volume is immediately lost — some Gulf producers can reroute limited quantities via the East-West Pipeline (capacity: 5 mb/d, current utilisation: approximately 2 mb/d) and the Abu Dhabi Crude Oil Pipeline (ADCOP, capacity: 1.5 mb/d). The IEA estimates the net global supply shortfall at 8–10 mb/d after accounting for alternative routing and production curtailments by Gulf states under force majeure.</p>
+
+<div class="finding critical">
+  <strong>Supply Shortfall Assessment</strong>
+  <p>The net disruption of 8–10 mb/d exceeds any previous supply shock. For comparison: the 1990 Gulf War removed approximately 4.3 mb/d; the 1979 Iranian Revolution disrupted approximately 5.6 mb/d; the 2019 Abqaiq–Khurais attack temporarily removed 5.7 mb/d (restored within weeks). The current disruption is both larger in magnitude and longer in expected duration. OPEC+ has offered to increase output by 206,000 b/d — a token 2 per cent offset that underscores the cartel's limited spare capacity.</p>
+</div>
+
+
+<!-- 4. REFINED PRODUCTS -->
+<h2 class="page-break">4. Refined Products: Downstream Pass-Through and Consumer Impact</h2>
+
+<p>Retail fuel prices have responded aggressively, with distillates (diesel and heating oil) exhibiting considerably sharper increases than gasoline — a pattern consistent with refinery-specific supply constraints compounding the crude oil shock. US retail diesel has risen from $3.46 per gallon in mid-January to $5.07 as of the week ending March 16, a 47 per cent increase and the first breach of the $5 level since the 2022 energy crisis. Heating oil at the New York Harbor benchmark has surged 81 per cent from $1.99 to $3.59 over the same period, the most extreme move among all petroleum products tracked.</p>
+
+<div class="two-col">
+  <div class="figure">
+    <div class="chart-container short"><canvas id="fig3"></canvas></div>
+    <div class="figure-caption"><strong class="figure-number">Figure 3.</strong> US weekly retail gasoline and diesel prices, December 2025–March 2026. Diesel's disproportionate increase (+47% vs. +34% for gasoline) signals distillate-specific supply stress. Source: FRED (GASREGW, GASDESW).</div>
+  </div>
+  <div class="figure">
+    <div class="chart-container short"><canvas id="fig4"></canvas></div>
+    <div class="figure-caption"><strong class="figure-number">Figure 4.</strong> New York Harbor heating oil price, January–March 2026. The 81% increase represents the sharpest move in any major petroleum product. Source: FRED (WHOILNYH).</div>
+  </div>
+</div>
+
+<p>The disproportionate impact on distillates carries significant macroeconomic implications. Diesel is the primary fuel for freight transport, agricultural equipment, and industrial heating. A sustained $5+ diesel price increases marginal shipping costs by approximately 15–20 per cent for long-haul trucking, with pass-through to consumer goods prices within 4–8 weeks. Heating oil, though less systemically important than diesel in the US, is the primary heating fuel for approximately 5.3 million households concentrated in the Northeast — a politically sensitive constituency entering the spring heating season's tail end.</p>
+
+<p>US regular gasoline has risen from $2.78 per gallon to $3.72 — a 34 per cent increase that, while less dramatic than distillates, is nonetheless the fastest sustained gasoline price rally since the March 2022 Russia-Ukraine shock. The typical two-week lag between crude oil and pump prices suggests further increases are embedded, with multiple analysts projecting $4.00–$4.50 per gallon by April if Brent remains above $100.</p>
+
+<h3>Price Change Summary: Petroleum Products</h3>
+<table>
+  <thead><tr><th>Product</th><th>Jan 2026 Low</th><th>Mar 16, 2026</th><th>Change</th><th>Signal</th></tr></thead>
+  <tbody>
+    <tr><td>Brent Crude ($/bbl)</td><td class="mono">62.54</td><td class="mono bold">101.04</td><td class="mono red">+61.6%</td><td><span class="tag critical">Critical</span></td></tr>
+    <tr><td>WTI Crude ($/bbl)</td><td class="mono">57.97</td><td class="mono bold">93.39</td><td class="mono red">+61.1%</td><td><span class="tag critical">Critical</span></td></tr>
+    <tr><td>Diesel Retail ($/gal)</td><td class="mono">3.459</td><td class="mono bold">5.071</td><td class="mono red">+46.6%</td><td><span class="tag critical">Critical</span></td></tr>
+    <tr><td>Heating Oil NY ($/gal)</td><td class="mono">1.986</td><td class="mono bold">3.588</td><td class="mono red">+80.7%</td><td><span class="tag critical">Critical</span></td></tr>
+    <tr><td>Gasoline Retail ($/gal)</td><td class="mono">2.779</td><td class="mono bold">3.720</td><td class="mono red">+33.9%</td><td><span class="tag warning">Elevated</span></td></tr>
+    <tr><td>Henry Hub NatGas ($/MMBtu)</td><td class="mono">3.03</td><td class="mono">3.03</td><td class="mono">0.0%</td><td><span class="tag ok">Stable</span></td></tr>
+    <tr><td>Coal Australia ($/MT)</td><td class="mono">115.68</td><td class="mono">115.82</td><td class="mono">+0.1%</td><td><span class="tag ok">Stable</span></td></tr>
+    <tr><td>Electricity US ($/kWh)</td><td class="mono">0.189</td><td class="mono">0.189</td><td class="mono">0.0%</td><td><span class="tag ok">Stable</span></td></tr>
+  </tbody>
+</table>
+<div class="figure-caption"><strong class="figure-number">Table 2.</strong> Petroleum product and energy price movements, January–March 2026. The shock is concentrated in oil-derived products; natural gas, coal, and electricity have not yet responded materially (see Section 5 for LNG nuance).</div>
+
+
+<!-- 5. NATURAL GAS & LNG -->
+<h2 class="page-break">5. Natural Gas and LNG: The Qatar Structural Shock</h2>
+
+<p>The natural gas market presents a bifurcated picture. US domestic natural gas (Henry Hub) has remained remarkably stable at approximately $3.03/MMBtu, reflecting the US's position as a net natural gas exporter with ample domestic shale production. The January 2026 spike to $7.72 (with a single-day peak of $30.72) was driven by an Arctic cold-weather event unrelated to the Middle East conflict. However, international LNG markets tell a fundamentally different story.</p>
+
+<div class="two-col">
+  <div class="figure">
+    <div class="chart-container short"><canvas id="fig5"></canvas></div>
+    <div class="figure-caption"><strong class="figure-number">Figure 5.</strong> Henry Hub natural gas prices (monthly average, $/MMBtu), March 2024–February 2026. Domestic US gas prices have recovered from historic lows but remain moderate, insulated by domestic production. Source: Alpha Vantage.</div>
+  </div>
+  <div class="figure">
+    <div class="chart-container short"><canvas id="fig6"></canvas></div>
+    <div class="figure-caption"><strong class="figure-number">Figure 6.</strong> LNG spot prices, Asia and Europe (monthly, $/MMBtu). Note the convergence in late 2025 as both markets softened, now diverging as competition for non-Qatari supply intensifies. February–March 2026 data not yet available at monthly frequency; spot reports indicate European prices surging 35% on March 19 alone. Source: FRED (PNGASJPUSDM, PNGASEUUSDM).</div>
+  </div>
+</div>
+
+<p>Qatar is the world's second-largest LNG exporter, producing approximately 80 million tonnes per annum from its North Field facilities at Ras Laffan Industrial City. QatarEnergy suspended all production on March 2 following Iranian drone attacks and declared force majeure on all long-term LNG contracts on March 4. The March 18–19 coordinated strikes inflicted what QatarEnergy's CEO described as "extensive damage" to primary liquefaction trains, with 17 per cent of total capacity physically destroyed. This transforms the disruption from a temporary transit issue into a structural LNG supply deficit with a multi-year recovery horizon.</p>
+
+<p>European gas prices surged 35 per cent on March 19 following the Ras Laffan strikes, with TTF futures breaching levels not seen since the 2022 Russian gas crisis. Europe is particularly exposed: having pivoted aggressively away from Russian pipeline gas following the 2022 invasion of Ukraine, European buyers increased their dependence on Qatari LNG imports from approximately 5 per cent to 12–14 per cent of total LNG supply. The loss of both Russian pipeline gas and Qatari LNG represents a compounding of supply shocks that the European gas market was not designed to absorb.</p>
+
+<p>At least nine LNG cargoes originally contracted for European delivery have been diverted to Asian buyers willing to pay spot premiums, a pattern consistent with the 2021–2022 LNG diversion dynamics but now operating under structural rather than cyclical scarcity. South Asian countries — Pakistan (99 per cent of LNG imports from the Gulf), Bangladesh (72 per cent), and India (53 per cent) — face acute LNG shortages, with Pakistan already implementing industrial rationing.</p>
+
+<div class="finding critical">
+  <strong>Structural LNG Deficit</strong>
+  <p>The physical destruction of Ras Laffan capacity (17 per cent, multi-year repair) means that even an immediate ceasefire would not restore Qatari LNG supply to pre-crisis levels for years. Global LNG markets will operate under structural deficit conditions through at least 2028, with particularly severe consequences for import-dependent economies in South and Southeast Asia, and for European winter gas procurement.</p>
+</div>
+
+
+<!-- 6. STRATEGIC RESERVES -->
+<h2 class="page-break">6. Strategic Reserves and Emergency Coordination</h2>
+
+<p>On March 11, the International Energy Agency's 32 member countries unanimously agreed to release 400 million barrels of crude oil and petroleum products from strategic reserves — the largest coordinated release in the IEA's history and only the sixth collective action since the agency's founding in 1974. For comparison, the previous record was the 2022 coordinated release of approximately 240 million barrels in response to the Russia-Ukraine conflict. The scale of the current release reflects the severity of the disruption.</p>
+
+<div class="figure">
+  <div class="chart-container"><canvas id="fig7"></canvas></div>
+  <div class="figure-caption"><strong class="figure-number">Figure 7.</strong> US commercial crude oil inventories and total petroleum inventories (weekly, million barrels), August 2025–March 2026. Commercial stocks have been building modestly since February, possibly reflecting pre-crisis stockpiling and reduced export demand. Total petroleum inventories have declined from the January peak, partly reflecting seasonal product draws. Source: EIA API v2.</div>
+</div>
+
+<h3>IEA Coordinated Release: Country Contributions</h3>
+<table>
+  <thead><tr><th>Country</th><th>Volume (M bbl)</th><th>Share of Total</th><th>Mechanism</th></tr></thead>
+  <tbody>
+    <tr><td>United States</td><td class="mono bold">172.0</td><td class="mono">43.0%</td><td>SPR drawdown (from 415M to ~243M bbl)</td></tr>
+    <tr><td>Japan</td><td class="mono bold">80.0</td><td class="mono">20.0%</td><td>SPR + lowered private mandate (70→55 days)</td></tr>
+    <tr><td>South Korea</td><td class="mono">30.0</td><td class="mono">7.5%</td><td>SPR drawdown</td></tr>
+    <tr><td>Germany</td><td class="mono">25.0</td><td class="mono">6.3%</td><td>Federal reserve + EBV stocks</td></tr>
+    <tr><td>Other IEA members</td><td class="mono">93.0</td><td class="mono">23.2%</td><td>Various national mechanisms</td></tr>
+    <tr class="bold"><td><strong>Total</strong></td><td class="mono bold">400.0</td><td class="mono bold">100%</td><td></td></tr>
+  </tbody>
+</table>
+<div class="figure-caption"><strong class="figure-number">Table 3.</strong> IEA coordinated strategic reserve release, announced March 11, 2026. Asia-Oceania releases began immediately; Americas and Europe from end of March. The US contributes 43% of the total, drawing SPR to its lowest level since the reserve's establishment.</div>
+
+<p>The arithmetic of the release is sobering. At a sustained supply shortfall of 8–10 mb/d, 400 million barrels provides approximately 40–50 days of coverage. Should the Strait remain closed through mid-May, the coordinated release will be substantially depleted, and the US SPR — at approximately 243 million barrels post-release — will have only 34 per cent of its 714 million barrel capacity remaining, the lowest level since the reserve's establishment in 1975. This constrains the credibility of future release announcements as a market stabilisation tool.</p>
+
+<div class="figure">
+  <div class="chart-container"><canvas id="fig8"></canvas></div>
+  <div class="figure-caption"><strong class="figure-number">Figure 8.</strong> US natural gas working storage, Lower 48 states (weekly, billion cubic feet). Storage has been drawing down seasonally since November, standing at 1,883 Bcf as of March 13 — within the normal range for this time of year. Injection season typically begins in April. Source: EIA API v2.</div>
+</div>
+
+
+<!-- 7. COUNTRY VULNERABILITY -->
+<h2 class="page-break">7. Country-Level Vulnerability Assessment</h2>
+
+<p>The distributional impact of the Strait of Hormuz closure is highly asymmetric. Countries with large domestic production (the United States, Canada, Brazil, Norway) face price shocks but not physical supply constraints. Import-dependent economies with substantial Hormuz exposure face both. Asia receives 89.2 per cent of all crude oil and condensate transiting the Strait, making this fundamentally an Asian energy security crisis with global price ramifications.</p>
+
+<div class="figure">
+  <div class="chart-container tall"><canvas id="fig9"></canvas></div>
+  <div class="figure-caption"><strong class="figure-number">Figure 9.</strong> Days of import cover by country, decomposed into strategic and commercial reserves. The IEA 90-day benchmark (red dashed line) represents the minimum recommended reserve level. Japan and South Korea exceed this threshold substantially; India, Pakistan, and Bangladesh fall critically short. China's reserves are estimated from satellite imagery and import/consumption gap analysis, as official figures are not published. Source: IEA, national energy agencies, Kpler estimates.</div>
+</div>
+
+<h3>Vulnerability Matrix: Major Import-Dependent Economies</h3>
+<table>
+  <thead><tr><th>Country</th><th>SPR (days)</th><th>Total Reserve (days)</th><th>Hormuz Dep.</th><th>LNG Dep. on Gulf</th><th>Assessment</th></tr></thead>
+  <tbody>
+    <tr><td>Japan</td><td class="mono">146</td><td class="mono bold">230–254</td><td>~80%</td><td>~25%</td><td><span class="tag ok">Well-buffered</span></td></tr>
+    <tr><td>South Korea</td><td class="mono">~150</td><td class="mono bold">200–210</td><td>~68%</td><td>~30%</td><td><span class="tag ok">Well-buffered</span></td></tr>
+    <tr><td>United States</td><td class="mono">~60*</td><td class="mono bold">~140</td><td>Low</td><td>N/A (exporter)</td><td><span class="tag ok">Self-sufficient</span></td></tr>
+    <tr><td>China</td><td class="mono">60–90</td><td class="mono bold">~90+</td><td>~40%</td><td>~15%</td><td><span class="tag elevated">Opaque, deep</span></td></tr>
+    <tr><td>Europe (gas)</td><td class="mono">—</td><td class="mono bold">26–30% fill</td><td>12–14%</td><td>12–14% LNG</td><td><span class="tag warning">Gas vulnerable</span></td></tr>
+    <tr><td>India</td><td class="mono bold red">7</td><td class="mono bold">~72</td><td>~50%</td><td>~53%</td><td><span class="tag critical">Critical</span></td></tr>
+    <tr><td>Pakistan</td><td class="mono bold red">~3</td><td class="mono bold red">~20</td><td>High</td><td>99%</td><td><span class="tag critical">Extreme risk</span></td></tr>
+    <tr><td>Bangladesh</td><td class="mono bold red">0</td><td class="mono bold red">~15</td><td>Moderate</td><td>72%</td><td><span class="tag critical">Extreme risk</span></td></tr>
+  </tbody>
+</table>
+<div class="figure-caption"><strong class="figure-number">Table 4.</strong> Country-level energy vulnerability assessment. *US SPR days are calculated against net imports; the US is a net petroleum exporter. India's 7-day SPR is critically below the IEA 90-day benchmark. Pakistan and Bangladesh lack meaningful strategic reserves entirely.</div>
+
+<p>Japan and South Korea represent the positive end of the preparedness spectrum. Japan maintains 230–254 days of total reserve cover (146 days government strategic, 101–108 days commercial) — the highest among major industrialised nations. Japan has already begun releasing 80 million barrels under the IEA coordination, partly by lowering the mandatory private stockpile requirement from 70 to 55 days. South Korea maintains comparable cover at 200–210 days. Both countries, however, are heavily exposed to a prolonged closure: approximately 80 per cent of Japan's crude imports and 68 per cent of South Korea's transit through Hormuz. Their reserves provide a buffer of 7–9 months against complete Hormuz dependence, after which alternative sourcing (West Africa, Americas) at higher cost and longer transit times becomes essential.</p>
+
+<p>India represents the most critical vulnerability among major economies. Its strategic petroleum reserve covers only approximately 7 days of consumption — an order of magnitude below the IEA's 90-day benchmark. Combined with commercial stocks, total reserve cover is approximately 72 days. India imports roughly 50 per cent of its crude through Hormuz and 53 per cent of its LNG from the Gulf. India has already begun rationing LPG for industrial use to protect household supplies, and the government has been negotiating directly with Iran for selective transit passage — partially successfully, with Indian LPG tankers receiving passage permits.</p>
+
+<p>China's reserve position is opaque but substantial. Satellite imagery analysis by Kpler and Ursa Space estimates government SPR at 400–500 million barrels in above-ground storage (Phases I–III), with total reserves including commercial stocks at 1.2–1.3 billion barrels. China has been aggressively building reserves since 2024, with 11 new storage sites adding approximately 169 million barrels of capacity. China's Hormuz dependence is approximately 40 per cent, lower than East Asian peers but still significant given the absolute volume (approximately 4.5 mb/d of Gulf crude). China's selective diplomatic positioning — maintaining communication with Iran while not opposing US operations — provides it with unique leverage in securing alternative transit arrangements.</p>
+
+<!-- 8. EUROPEAN ENERGY SECURITY -->
+<h2 class="page-break">8. European Energy Security: Gas Storage and Winter Risk</h2>
+
+<p>European gas storage entered the 2025/26 winter season at approximately 63 per cent capacity — below the prior year's level and below the EU's target trajectory. The draw-down has been heavy, and as of mid-March 2026, aggregate EU gas storage stands at approximately 26–30 per cent — the lowest seasonal level in recent years. Individual country fill rates vary: Germany at 30.2 per cent, France at 29 per cent, the Netherlands at 23.5 per cent, Italy at approximately 35 per cent, and Spain at approximately 45 per cent (benefiting from diversified LNG import infrastructure and North African pipeline connections).</p>
+
+<div class="figure">
+  <div class="chart-container"><canvas id="fig10"></canvas></div>
+  <div class="figure-caption"><strong class="figure-number">Figure 10.</strong> EU gas storage fill rates by country (mid-March 2026) versus the 90% November target mandated by EU regulation 2022/1032. The gap between current levels and the target — approximately 60 percentage points — must be filled during the April–October injection season, now severely complicated by the loss of Qatari LNG. Source: Gas Infrastructure Europe (GIE), EU Council.</div>
+</div>
+
+<p>The EU must inject at least 575 TWh of natural gas during the April–October 2026 injection season to meet the legally mandated 90 per cent fill target by November. Under normal supply conditions, this is achievable but tight. With Qatari LNG offline (12–14 per cent of EU LNG imports) and spot LNG prices elevated due to Asian competition, the procurement challenge is acute. The EU has limited near-term alternatives: US LNG exports are already at capacity, Australian LNG is primarily contracted to Asian buyers, and Norwegian pipeline gas is at maximum throughput. The structural loss of Ras Laffan capacity (multi-year repair) means this is not a one-winter problem but a sustained supply constraint through at least 2028–2029.</p>
+
+<div class="finding warning">
+  <strong>European Winter 2026/27 Risk</strong>
+  <p>Should Qatari LNG remain offline and spot LNG prices sustain above $15/MMBtu, the EU faces a material risk of failing the 90% storage fill target. This would replicate the 2022 dynamic of demand rationing, industrial curtailment, and high consumer prices — but from a weaker starting position (lower storage, less Russian gas substitution remaining). Germany, France, and the Netherlands are most exposed.</p>
+</div>
+
+
+<!-- 9. SECONDARY MARKETS -->
+<h2>9. Secondary Energy Markets: Coal and Electricity</h2>
+
+<p>Coal and electricity prices have thus far remained remarkably stable, indicating that the current shock is concentrated in oil-derived products and LNG rather than representing a broad-based energy crisis — at least at this stage. Australian thermal coal trades at approximately $115.82/MT, essentially unchanged from late 2025 levels and well below the $150+ levels of late 2024. US average electricity prices remain at $0.189/kWh, reflecting the US generation mix's relatively low oil dependence (approximately 0.5 per cent of US electricity comes from petroleum).</p>
+
+<div class="two-col">
+  <div class="figure">
+    <div class="chart-container short"><canvas id="fig11"></canvas></div>
+    <div class="figure-caption"><strong class="figure-number">Figure 11.</strong> Global coal price, Australian benchmark ($/MT, monthly). No material response to the Middle East crisis, as coal supply chains are geographically distinct from the Gulf. Source: FRED (PCOALAUUSDM).</div>
+  </div>
+  <div class="figure">
+    <div class="chart-container short"><canvas id="fig12"></canvas></div>
+    <div class="figure-caption"><strong class="figure-number">Figure 12.</strong> US average retail electricity price ($/kWh, monthly). Stable at ~$0.189, reflecting low oil dependence in US power generation. European electricity prices, which are gas-indexed, are expected to diverge significantly. Source: FRED (APU000072610).</div>
+  </div>
+</div>
+
+<p>However, this stability is unlikely to persist if the crisis extends. European electricity prices are indexed to marginal gas generation costs; as TTF gas prices rise, electricity prices follow with near-unit elasticity. Asian economies that rely on oil-fired generation (notably Japan, where approximately 6 per cent of generation is oil-fired) will see electricity cost pass-through. Coal prices may also rise as gas-to-coal switching accelerates in Europe and Asia, tightening the seaborne thermal coal market.</p>
+
+
+<!-- 10. MACRO & MONETARY POLICY -->
+<h2 class="page-break">10. Macroeconomic and Monetary Policy Implications</h2>
+
+<p>The energy supply shock presents central banks with the classical supply-side dilemma: a simultaneous increase in inflation (via energy cost pass-through) and decrease in output (via terms-of-trade deterioration, reduced consumer purchasing power, and disrupted supply chains). The policy response is inherently constrained — monetary tightening can anchor inflation expectations but deepens the output contraction; accommodation prevents recession but risks de-anchoring inflation expectations that were only recently re-anchored following the 2021–2023 inflation episode.</p>
+
+<h3>Inflation Pass-Through Channels</h3>
+
+<p>The primary inflation transmission mechanisms are: (i) direct energy cost pass-through to CPI (gasoline, heating, electricity); (ii) indirect cost-push via diesel and freight costs (food, consumer goods, industrial inputs); and (iii) second-round effects via wage demands if inflation expectations become unanchored. Based on the current price moves and standard pass-through elasticities, we estimate the following:</p>
+
+<table>
+  <thead><tr><th>Channel</th><th>Price Move</th><th>CPI Impact (annualised)</th><th>Timing</th></tr></thead>
+  <tbody>
+    <tr><td>Direct energy (gasoline, heating)</td><td>+34% to +81%</td><td class="mono bold">+1.5 to +2.5 pp</td><td>Immediate (1–2 months)</td></tr>
+    <tr><td>Indirect (diesel → freight → goods)</td><td>+47% diesel</td><td class="mono">+0.5 to +1.0 pp</td><td>Lagged (2–4 months)</td></tr>
+    <tr><td>Food (energy inputs + fertiliser)</td><td>TBD</td><td class="mono">+0.3 to +0.8 pp</td><td>Lagged (3–6 months)</td></tr>
+    <tr><td>Second-round (wages)</td><td>TBD</td><td class="mono">+0.2 to +0.5 pp</td><td>Lagged (6–12 months)</td></tr>
+    <tr class="bold"><td><strong>Total CPI impact</strong></td><td></td><td class="mono bold red">+2.5 to +4.8 pp</td><td>Cumulative over 12 months</td></tr>
+  </tbody>
+</table>
+<div class="figure-caption"><strong class="figure-number">Table 5.</strong> Estimated CPI inflation pass-through from current energy price shock. Central estimate: 3.5 percentage points of additional annualised CPI inflation over the next 12 months, assuming current prices persist. If Brent rises to the $140–160 range (Scenario B), the total impact rises to 5–7 percentage points.</div>
+
+<div class="finding">
+  <strong>Monetary Policy Assessment</strong>
+  <p>We recommend maintaining the current policy rate at this juncture, with forward guidance signalling that the Committee views the energy shock as primarily supply-driven and will "look through" the first-round inflation effects provided that medium-term inflation expectations remain anchored. However, should 5-year breakeven inflation rates rise above [threshold], a pre-emptive tightening response would be warranted. The risk of premature tightening — deepening a supply-shock recession — currently exceeds the risk of delayed tightening, given the transitory nature of the shock under our base scenario.</p>
+</div>
+
+
+<!-- 11. SCENARIO ANALYSIS -->
+<h2 class="page-break">11. Scenario Analysis and Risk Assessment</h2>
+
+<p>We construct three scenarios for the evolution of the crisis, calibrated against current conflict dynamics, historical precedents, and estimated reserve depletion rates.</p>
+
+<table>
+  <thead><tr><th>Parameter</th><th>Scenario A: Ceasefire (30%)</th><th>Scenario B: Prolonged (45%)</th><th>Scenario C: Widening (25%)</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Horizon</strong></td><td>Ceasefire by May 2026</td><td>Conflict through Q3 2026</td><td>Escalation to Saudi/other Gulf</td></tr>
+    <tr><td><strong>Strait status</strong></td><td>Reopened by June</td><td>Partially reopened by Aug</td><td>Closed through year-end</td></tr>
+    <tr><td><strong>Qatar LNG</strong></td><td>Partial by Q4 2026</td><td>Minimal through 2027</td><td>Minimal through 2028+</td></tr>
+    <tr><td><strong>Brent range</strong></td><td class="mono">$85–100</td><td class="mono bold">$110–140</td><td class="mono bold red">$150–200+</td></tr>
+    <tr><td><strong>SPR post-release</strong></td><td>~300M bbl (refill begins)</td><td>~243M bbl (depleted)</td><td>~200M bbl (emergency draws)</td></tr>
+    <tr><td><strong>CPI impact</strong></td><td class="mono">+2.0–3.0 pp</td><td class="mono bold">+3.5–5.0 pp</td><td class="mono bold red">+5.0–7.0 pp</td></tr>
+    <tr><td><strong>GDP impact</strong></td><td class="mono">-0.5 to -1.0 pp</td><td class="mono bold">-1.5 to -2.5 pp</td><td class="mono bold red">-3.0 to -5.0 pp</td></tr>
+    <tr><td><strong>Global recession</strong></td><td>Low probability</td><td><span class="tag warning">Central scenario</span></td><td><span class="tag critical">Near-certain</span></td></tr>
+    <tr><td><strong>Rationing</strong></td><td>Unlikely</td><td>South Asia, partial Europe</td><td>Widespread Asia, full Europe</td></tr>
+  </tbody>
+</table>
+<div class="figure-caption"><strong class="figure-number">Table 6.</strong> Scenario analysis for the Strait of Hormuz crisis. Probabilities reflect staff assessment as of March 19, 2026. The central scenario (B, 45% probability) assumes the conflict persists through Q3 2026 with partial Strait reopening by August — resulting in a global recession driven by energy cost pass-through.</div>
+
+<div class="figure">
+  <div class="chart-container"><canvas id="fig13"></canvas></div>
+  <div class="figure-caption"><strong class="figure-number">Figure 13.</strong> Brent crude price scenario fan chart (illustrative). The shaded regions represent the price ranges under Scenarios A (green), B (amber), and C (red). Current price (~$101) sits at the upper bound of Scenario A, consistent with market pricing that reflects a ceasefire probability below 50%. Source: Staff estimates.</div>
+</div>
+
+<p>Our central scenario (B, 45 per cent probability) assumes the conflict persists through Q3 2026 with gradual, partial reopening of the Strait by August following diplomatic or military de-escalation. Under this scenario, Brent averages $110–140 per barrel for Q2–Q3, the IEA coordinated release is fully drawn, and GDP growth in OECD economies contracts by 1.5–2.5 percentage points. A global technical recession (two consecutive quarters of negative growth) becomes the central expectation.</p>
+
+<p>Scenario C (widening, 25 per cent probability) is the tail risk we are most concerned about. Should the conflict widen to include direct Saudi–Iranian hostilities or further destruction of Gulf production capacity, oil markets could enter a regime of genuine physical scarcity not seen since 1973. In this scenario, price becomes the rationing mechanism, and $200+ per barrel is not implausible. The macro consequences would be severe: deep recession, rapid de-anchoring of inflation expectations, and potential financial stability risks in energy-importing emerging markets (debt sustainability, currency crises, social instability).</p>
+
+
+<!-- 12. RECOMMENDATIONS -->
+<h2 class="page-break">12. Recommendations</h2>
+
+<div class="finding positive">
+  <strong>Recommendation 1: Monetary Policy — Hold and Watch</strong>
+  <p>Maintain the current policy rate. Signal willingness to "look through" first-round energy price effects, conditioned on medium-term inflation expectations remaining anchored. Prepare contingency plans for tightening if 5-year breakeven rates exceed [threshold] for more than four consecutive weeks.</p>
+</div>
+
+<div class="finding">
+  <strong>Recommendation 2: Financial Stability Monitoring</strong>
+  <p>Intensify monitoring of: (i) energy-sector credit exposures across the banking system; (ii) counterparty risk in commodity derivatives markets; (iii) sovereign debt sustainability in energy-importing emerging markets; (iv) insurance and reinsurance sector exposures to maritime losses in the Gulf. Activate enhanced reporting frequency (weekly rather than monthly) for these risk categories.</p>
+</div>
+
+<div class="finding">
+  <strong>Recommendation 3: Coordination with Fiscal Authorities</strong>
+  <p>Engage fiscal authorities to ensure that any consumer energy support measures (fuel subsidies, tax reductions) are temporary, targeted, and do not compromise the credibility of the inflation target. Advise against broad-based fuel subsidies that suppress the price signal needed for demand adjustment; favour targeted transfers to vulnerable households.</p>
+</div>
+
+<div class="finding">
+  <strong>Recommendation 4: International Coordination</strong>
+  <p>Engage with peer central banks (ECB, BOJ, BOE, RBI) on coordinated communication strategies to prevent disorderly market responses to the energy shock. The 2022 playbook — where major central banks tightened aggressively in response to energy-driven inflation — may not be appropriate for a shock of this structural severity. Coordinated dovish communication could prevent a simultaneous global policy-induced recession on top of the supply shock.</p>
+</div>
+
+<div class="finding warning">
+  <strong>Recommendation 5: Scenario Preparedness</strong>
+  <p>Develop operational plans for Scenario C (widening conflict, $150–200 oil, physical rationing). This includes: framework for emergency liquidity provision to energy-exposed financial institutions; coordination protocol with government on petroleum product allocation; stress-testing of national payment systems against fuel disruption scenarios; and contingency communication plans for financial market dislocation.</p>
+</div>
+
+<br>
+
+<div class="disclaimer">
+  <strong>Disclaimer.</strong> This report has been prepared by the Financial Stability & Macroeconomic Analysis Division for internal deliberation. The assessments, scenarios, and recommendations contained herein reflect staff judgement as of March 19, 2026 and do not represent official policy positions. All data from public sources (FRED, EIA, Alpha Vantage, IEA) unless otherwise noted. Scenario probabilities are subjective assessments reflecting current intelligence and are subject to rapid revision as events develop. This document is classified Restricted and is not authorised for public release.
+</div>
+
+<div class="footnotes">
+  <p><sup>1</sup> Ship-tracking data from Kpler, MarineTraffic. Traffic reduction estimates based on 7-day rolling vessel counts vs. pre-conflict baseline.</p>
+  <p><sup>2</sup> QatarEnergy damage assessment per CEO statement, March 19, 2026 (Reuters). Independent verification pending.</p>
+  <p><sup>3</sup> IEA Oil Market Report, March 2026. Supply shortfall estimates subject to revision as alternative routing data becomes available.</p>
+  <p><sup>4</sup> China SPR estimates from Kpler satellite imagery analysis and Ursa Space Systems. Official figures not published by Chinese authorities.</p>
+  <p><sup>5</sup> EU gas storage data from Gas Infrastructure Europe (GIE), aggregated by European Commission.</p>
+  <p><sup>6</sup> CPI pass-through estimates based on Federal Reserve Board staff models, calibrated to 2022 energy shock pass-through coefficients with adjustment for current capacity utilisation and output gap.</p>
+</div>
+
+</div><!-- container -->
+
+<!-- CHARTS -->
+<script>
+Chart.defaults.color = '#475569';
+Chart.defaults.borderColor = '#e2e8f0';
+Chart.defaults.font.family = "'Source Sans 3', 'Segoe UI', sans-serif";
+Chart.defaults.font.size = 11;
+const gridColor = 'rgba(226,232,240,0.7)';
+
+// Fig 1: Daily Oil Prices
+new Chart(document.getElementById('fig1'), {
+  type: 'line',
+  data: {
+    labels: ['Feb 12','Feb 13','Feb 17','Feb 18','Feb 19','Feb 20','Feb 23','Feb 24','Feb 25','Feb 26','Feb 27','Mar 2','Mar 3','Mar 4','Mar 5','Mar 6','Mar 9','Mar 10','Mar 11','Mar 12','Mar 13','Mar 16'],
+    datasets: [{
+      label: 'Brent Crude ($/bbl)',
+      data: [69.33,69.96,69.77,71.78,73.17,72.75,71.90,71.21,70.69,71.66,71.32,77.24,83.28,81.56,88.59,95.74,94.35,89.84,90.98,102.38,103.23,101.04],
+      borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,0.08)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2.5
+    },{
+      label: 'WTI Crude ($/bbl)',
+      data: [62.71,63.05,62.53,65.33,66.66,66.69,66.36,65.62,65.30,65.10,66.96,71.13,74.48,74.58,80.88,90.77,94.65,83.71,86.80,95.61,98.48,93.39],
+      borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.06)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'line' } } }, scales: { y: { grid: { color: gridColor }, title: { display: true, text: '$/barrel' } } } }
+});
+
+// Fig 2: Monthly Oil Prices
+new Chart(document.getElementById('fig2'), {
+  type: 'line',
+  data: {
+    labels: ['Mar 24','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan 25','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan 26','Feb'],
+    datasets: [{
+      label: 'Brent Monthly Avg',
+      data: [85.42,88.50,81.75,82.25,85.15,80.36,74.02,75.63,74.35,73.86,79.27,75.44,72.73,68.13,64.45,71.44,71.04,67.87,67.99,64.54,63.80,62.54,66.60,70.89],
+      borderColor: '#dc2626', tension: 0.3, pointRadius: 2, borderWidth: 2
+    },{
+      label: 'WTI Monthly Avg',
+      data: [81.26,83.39,80.02,79.77,81.80,76.68,70.24,71.99,69.95,70.12,75.74,71.53,68.24,63.54,62.17,68.17,68.39,64.86,63.96,60.89,60.06,57.97,60.04,64.51],
+      borderColor: '#2563eb', tension: 0.3, pointRadius: 2, borderWidth: 2
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'line' } } }, scales: { y: { grid: { color: gridColor }, title: { display: true, text: '$/barrel' } } } }
+});
+
+// Fig 3: Gasoline & Diesel
+new Chart(document.getElementById('fig3'), {
+  type: 'line',
+  data: {
+    labels: ['Dec 29','Jan 12','Jan 26','Feb 9','Feb 23','Mar 2','Mar 9','Mar 16'],
+    datasets: [{
+      label: 'Gasoline ($/gal)',
+      data: [2.811, 2.779, 2.85, 2.88, 2.937, 3.015, 3.502, 3.720],
+      borderColor: '#d97706', backgroundColor: 'rgba(217,119,6,0.08)', fill: true, tension: 0.3, borderWidth: 2
+    },{
+      label: 'Diesel ($/gal)',
+      data: [3.500, 3.459, 3.55, 3.70, 3.809, 3.897, 4.859, 5.071],
+      borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,0.08)', fill: true, tension: 0.3, borderWidth: 2.5
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'line' } } }, scales: { y: { grid: { color: gridColor }, title: { display: true, text: '$/gallon' } } } }
+});
+
+// Fig 4: Heating Oil
+new Chart(document.getElementById('fig4'), {
+  type: 'line',
+  data: {
+    labels: ['Jan 9','Jan 23','Feb 6','Feb 20','Feb 27','Mar 6','Mar 13'],
+    datasets: [{
+      label: 'Heating Oil NY Harbor ($/gal)',
+      data: [1.986, 2.05, 2.193, 2.35, 2.579, 3.213, 3.588],
+      borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.1)', fill: true, tension: 0.3, pointRadius: 4, borderWidth: 2.5
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: gridColor }, title: { display: true, text: '$/gallon' } } } }
+});
+
+// Fig 5: Henry Hub
+new Chart(document.getElementById('fig5'), {
+  type: 'line',
+  data: {
+    labels: ['Mar 24','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan 25','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan 26','Feb'],
+    datasets: [{
+      label: 'Henry Hub ($/MMBtu)',
+      data: [1.49,1.60,2.12,2.54,2.07,1.99,2.28,2.20,2.12,3.01,4.13,4.19,4.12,3.42,3.12,3.02,3.20,2.91,2.97,3.19,3.79,4.26,7.72,3.62],
+      borderColor: '#059669', backgroundColor: 'rgba(5,150,105,0.08)', fill: true, tension: 0.3, pointRadius: 2, borderWidth: 2
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: gridColor }, title: { display: true, text: '$/MMBtu' } } } }
+});
+
+// Fig 6: LNG Prices
+new Chart(document.getElementById('fig6'), {
+  type: 'line',
+  data: {
+    labels: ['Jun 24','Jul','Aug','Sep','Oct','Nov','Dec','Jan 25','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan 26'],
+    datasets: [{
+      label: 'LNG Asia ($/MMBtu)',
+      data: [12.2,12.5,13.1,13.8,13.2,14.0,14.5,15.0,14.72,13.8,13.0,12.5,12.26,12.0,11.5,10.8,10.5,10.2,9.91,10.44],
+      borderColor: '#7c3aed', tension: 0.3, pointRadius: 2, borderWidth: 2
+    },{
+      label: 'LNG Europe ($/MMBtu)',
+      data: [11.5,12.0,12.8,13.5,13.0,14.2,14.8,15.2,15.38,14.5,13.2,12.0,11.5,11.0,10.8,10.2,9.8,9.6,9.46,11.99],
+      borderColor: '#2563eb', tension: 0.3, pointRadius: 2, borderWidth: 2, borderDash: [5,3]
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'line' } } }, scales: { y: { grid: { color: gridColor }, title: { display: true, text: '$/MMBtu' } } } }
+});
+
+// Fig 7: Inventories
+new Chart(document.getElementById('fig7'), {
+  type: 'line',
+  data: {
+    labels: ['Aug 22','Sep 5','Sep 19','Oct 3','Oct 17','Oct 31','Nov 14','Nov 28','Dec 12','Dec 26','Jan 9','Jan 23','Feb 6','Feb 20','Mar 6','Mar 13'],
+    datasets: [{
+      label: 'Commercial Crude (M bbl)',
+      data: [418.3,424.6,414.8,420.3,422.8,421.2,424.2,427.5,424.4,422.9,422.4,423.8,428.8,435.8,443.1,449.3],
+      borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.08)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2, yAxisID: 'y'
+    },{
+      label: 'Total Petroleum (M bbl)',
+      data: [1258.7,1281.3,1281.9,1287.2,1284.6,1269.4,1269.2,1276.0,1275.0,1285.8,1300.1,1300.9,1273.9,1266.0,1266.9,1267.4],
+      borderColor: '#059669', tension: 0.3, pointRadius: 2, borderWidth: 2, borderDash: [5,3], yAxisID: 'y1'
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'line' } } },
+    scales: {
+      y: { type: 'linear', position: 'left', grid: { color: gridColor }, title: { display: true, text: 'Commercial (M bbl)' }, min: 400 },
+      y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Total (M bbl)' }, min: 1240 }
+    }
+  }
+});
+
+// Fig 8: Natural Gas Storage
+new Chart(document.getElementById('fig8'), {
+  type: 'bar',
+  data: {
+    labels: ['Sep 25','Oct','Nov','Dec','Jan 26','Feb','Mar 6','Mar 13'],
+    datasets: [{
+      label: 'Lower 48 Working Gas (Bcf)',
+      data: [3550, 3800, 3600, 3200, 2700, 2018, 1848, 1883],
+      backgroundColor: 'rgba(5,150,105,0.35)', borderColor: '#059669', borderWidth: 1
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: gridColor }, title: { display: true, text: 'Bcf' } } } }
+});
+
+// Fig 9: Days of Import Cover
+new Chart(document.getElementById('fig9'), {
+  type: 'bar',
+  data: {
+    labels: ['Japan', 'South Korea', 'United States', 'China', 'India', 'Pakistan', 'Bangladesh'],
+    datasets: [{
+      label: 'Strategic Reserve (days)',
+      data: [146, 150, 60, 75, 7, 3, 0],
+      backgroundColor: 'rgba(37,99,235,0.6)', borderColor: '#2563eb', borderWidth: 1
+    },{
+      label: 'Commercial Reserve (days)',
+      data: [108, 60, 80, 20, 65, 17, 15],
+      backgroundColor: 'rgba(5,150,105,0.5)', borderColor: '#059669', borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+    scales: {
+      x: { stacked: true, grid: { color: gridColor }, title: { display: true, text: 'Days of Import Cover' } },
+      y: { stacked: true }
+    },
+    plugins: {
+      legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rect' } },
+      annotation: { annotations: { line1: { type: 'line', xMin: 90, xMax: 90, borderColor: '#dc2626', borderWidth: 2, borderDash: [6,3], label: { display: true, content: 'IEA 90-day minimum', position: 'start', color: '#dc2626', font: { size: 10 } } } } }
+    }
+  }
+});
+
+// Fig 10: EU Gas Storage
+new Chart(document.getElementById('fig10'), {
+  type: 'bar',
+  data: {
+    labels: ['Germany', 'France', 'Netherlands', 'Italy', 'Spain', 'EU Average'],
+    datasets: [{
+      label: 'Current Fill Rate (%)',
+      data: [30.2, 29, 23.5, 35, 45, 28],
+      backgroundColor: 'rgba(220,38,38,0.5)', borderColor: '#dc2626', borderWidth: 1
+    },{
+      label: 'Gap to 90% Target',
+      data: [59.8, 61, 66.5, 55, 45, 62],
+      backgroundColor: 'rgba(226,232,240,0.5)', borderColor: '#cbd5e1', borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: { x: { stacked: true }, y: { stacked: true, max: 100, grid: { color: gridColor }, title: { display: true, text: 'Storage Fill Rate (%)' } } },
+    plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'rect' } } }
+  }
+});
+
+// Fig 11: Coal
+new Chart(document.getElementById('fig11'), {
+  type: 'line',
+  data: {
+    labels: ['Apr 24','Jun','Aug','Oct','Dec','Feb 25','Apr','Jun','Aug','Oct','Dec','Jan 26'],
+    datasets: [{
+      label: 'Coal Australia ($/MT)',
+      data: [135,128,138,145,150,140,101,110,108,112,115.7,115.8],
+      borderColor: '#d97706', backgroundColor: 'rgba(217,119,6,0.08)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: gridColor }, title: { display: true, text: '$/MT' } } } }
+});
+
+// Fig 12: Electricity
+new Chart(document.getElementById('fig12'), {
+  type: 'line',
+  data: {
+    labels: ['Jun 24','Aug','Oct','Dec','Feb 25','Apr','Jun','Aug','Oct','Dec','Jan 26','Feb'],
+    datasets: [{
+      label: 'US Avg Electricity ($/kWh)',
+      data: [0.183,0.184,0.181,0.176,0.179,0.183,0.190,0.189,0.185,0.189,0.192,0.189],
+      borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.08)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: gridColor }, title: { display: true, text: '$/kWh' } } } }
+});
+
+// Fig 13: Scenario Fan Chart
+new Chart(document.getElementById('fig13'), {
+  type: 'line',
+  data: {
+    labels: ['Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [
+      { label: 'Scenario C Upper', data: [71,120,180,200,210,200,195,190,185,180,175], borderColor: 'transparent', backgroundColor: 'rgba(220,38,38,0.12)', fill: true, pointRadius: 0, tension: 0.3 },
+      { label: 'Scenario C Lower', data: [71,105,140,150,155,150,145,140,138,135,130], borderColor: 'transparent', backgroundColor: 'rgba(255,255,255,1)', fill: '-1', pointRadius: 0, tension: 0.3 },
+      { label: 'Scenario B Upper', data: [71,105,135,140,138,135,130,125,120,115,110], borderColor: 'transparent', backgroundColor: 'rgba(217,119,6,0.15)', fill: true, pointRadius: 0, tension: 0.3 },
+      { label: 'Scenario B Lower', data: [71,95,105,110,112,110,108,105,100,98,95], borderColor: 'transparent', backgroundColor: 'rgba(255,255,255,1)', fill: '-1', pointRadius: 0, tension: 0.3 },
+      { label: 'Scenario A Upper', data: [71,95,100,98,95,92,90,88,87,86,85], borderColor: 'transparent', backgroundColor: 'rgba(5,150,105,0.12)', fill: true, pointRadius: 0, tension: 0.3 },
+      { label: 'Scenario A Lower', data: [71,85,88,90,88,86,84,83,82,82,82], borderColor: 'transparent', backgroundColor: 'rgba(255,255,255,1)', fill: '-1', pointRadius: 0, tension: 0.3 },
+      { label: 'Current / Actual', data: [71,101,null,null,null,null,null,null,null,null,null], borderColor: '#1a2332', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#1a2332', tension: 0.3, fill: false }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { grid: { color: gridColor }, title: { display: true, text: 'Brent Crude ($/bbl)' }, min: 60, max: 220 }, x: { title: { display: true, text: '2026' } } }
+  }
+});
+</script>
+
+</body>
+</html>
